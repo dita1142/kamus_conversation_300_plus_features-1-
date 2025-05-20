@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kamus Percakapan Jepang-Indonesia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Jakarta Sans', sans-serif;
+    }
+    body {
+      margin: 0;
+      background-color: #ef2e3b;
+      color: #333;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+    header {
+      padding: 20px;
+      background: inherit;
+      color: white;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      position: relative;
+    }
+    .toggle-mode {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      color: #ef2e3b;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+    }
+    .tabs button {
+      background: white;
+      color: #ef2e3b;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .tabs button.active {
+      background: #ef2e3b;
+      color: white;
+      border: 2px solid white;
+    }
+    .search {
+      display: flex;
+      justify-content: center;
+      padding: 10px 20px;
+    }
+    .search input {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: none;
+    }
+    .card {
+      background: white;
+      margin: 10px 15px;
+      padding: 15px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .card .speaker {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #ef2e3b;
+    }
+    body.dark .card {
+      background: #333;
+    }
+    .kana {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .romaji {
+      font-size: 1rem;
+      color: #555;
+    }
+    .indo {
+      font-size: 0.95rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Kamus Percakapan
+    <button class="toggle-mode" onclick="toggleDarkMode()">🌓</button>
+  </header>
+  <div class="tabs">
+    <button class="active" onclick="filterKamus('Semua', this)">Semua</button>
+    <button onclick="filterKamus('Salam', this)">Salam</button>
+    <button onclick="filterKamus('Pertanyaan', this)">Pertanyaan</button>
+    <button onclick="filterKamus('Travel', this)">Travel</button>
+    <button onclick="filterKamus('Umum', this)">Umum</button>
+  </div>
+  <div class="search">
+    <input type="text" id="searchInput" placeholder="Cari kata...">
+  </div>
+  <div id="container"></div>
+
+  <script src="kamus_conversation_300.js"></script>
+  <script>
+    const container = document.getElementById("container");
+    const searchInput = document.getElementById("searchInput");
+    const buttons = document.querySelectorAll(".tabs button");
+    let currentData = [...kamusPercakapan];
+
+    function displayKamus(list) {
+      container.innerHTML = "";
+      list.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="speaker" onclick="speak('${item.japanese}')">🔊</div>
+          <div class="kana">${item.japanese}</div>
+          <div class="romaji">${item.romaji}</div>
+          <div class="indo">${item.indonesia}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterKamus(kategori, el) {
+      buttons.forEach(btn => btn.classList.remove("active"));
+      el.classList.add("active");
+      if (kategori === "Semua") {
+        currentData = [...kamusPercakapan];
+      } else {
+        currentData = kamusPercakapan.filter(item => item.kategori === kategori);
+      }
+      applySearch();
+    }
+
+    function applySearch() {
+      const keyword = searchInput.value.toLowerCase();
+      const filtered = currentData.filter(item =>
+        item.japanese.toLowerCase().includes(keyword) ||
+        item.romaji.toLowerCase().includes(keyword) ||
+        item.indonesia.toLowerCase().includes(keyword)
+      );
+      displayKamus(filtered);
+    }
+
+    function speak(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "ja-JP";
+      speechSynthesis.speak(utter);
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    searchInput.addEventListener("input", applySearch);
+    displayKamus(kamusPercakapan);
+  </script>
+</body>
+</html>
